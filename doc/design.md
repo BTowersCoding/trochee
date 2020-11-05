@@ -12,7 +12,7 @@ I'm starting with an extremely simple "unified" design, a compact 64-key layout 
 
 ![Unified design](../resources/keys-in-holes.png)
 
-Obviously note that there is no separate thumb cluster. Having never gotten accustomed to one I likely don't know what I'm missing, but removing it really appeals to me in terms of symmetry and space economy. The Maltron is essentially a bowl-shape anyway, I just decided to take it to its logical extreme. This also allows a single design to be used for a modified left/right handed Dvorak layout:
+Obviously note that there is no separate thumb cluster. Having never gotten accustomed to one I likely don't know what I'm missing, but removing it really appeals to me in terms of symmetry and space economy. The Maltron is essentially a bowl-shape anyway, I just decided to take it to its logical extreme. This also allows a single design to be used for no-hands (vertically mounted, mouth/stick) use, or a modified left/right handed Dvorak layout:
 
 ![Right-hand Dvorak](../resources/trochee-layout.png)
 
