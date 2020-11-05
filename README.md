@@ -1,6 +1,6 @@
 # trochee
 
-The Trochee keyboard is a parameterized, single-handed, concave, columnar, ergonomic keyboard. See the [design documentation](./doc/design.md) for full details.
+The Trochee keyboard is a parameterized, concave, columnar, ergonomic keyboard with a focus on accessibility. See the [design documentation](./doc/design.md) for full details.
 
 ![Trochee design](./resources/keys-in-holes.png)
 
