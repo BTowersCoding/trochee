@@ -2,7 +2,7 @@
 
 ## Rationale - what is "accessibility"?
 
-There are many reasons andsituations where one would find themselves without use of one or both of their hands. Injuries, child-rearing, and probably countless others I haven't thought of. Usually though, unless the reason is permanent, it is not worth the monetary investment to justify a $400-$1000 Maltron keyboard. I think this is a major problem, and if there were a cheaper option, more people would enjoy a more productive lifestyle while in these compromizing situations.
+There are many reasons and situations where one would find themselves without use of one or both of their hands. Injuries, child-rearing, and probably countless others I haven't thought of. Usually though, unless the reason is permanent, it is not worth the monetary investment to justify a $400-$1000 Maltron keyboard. I think this is a major problem, and if there were a cheaper option, more people would enjoy a more productive lifestyle while in these compromising situations.
 
 The Trochee keyboard is a parameterized, concave, columnar, ergonomic keyboard with a focus on accessibility. See the [design documentation](./doc/design.md) for full details.
 
