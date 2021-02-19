@@ -16,7 +16,7 @@ Obviously note that there is no separate thumb cluster. Having never gotten accu
 
 ![Right-hand Dvorak](../resources/trochee-layout.png)
 
-The RH layout shown above was made from [this Google spreadsheet](https://docs.google.com/spreadsheets/d/1xOWducbubP0qwdRJrk3cX1Vj-P_76z_ZsI5OsXZRFNY/edit?usp=sharing). The LH version can be a mirror image of it. 8 columns were chosen since it will just fit the letters in this configuration. It should be no wider as to minimize lateral finger movement, with 3 extra rows on top for the numbers, arrows and other less frequently used keys.
+The RH layout shown above was made with the [Keyboard Layout Editor](http://www.keyboard-layout-editor.com/#/gists/ee085098739d7443e5c2037a8fca9ad5). The LH version can be a mirror image of it. 8 columns were chosen since it will just fit the letters in this configuration. It should be no wider as to minimize lateral finger movement, with 3 extra rows on top for the numbers, arrows and other less frequently used keys.
 
 ## Switches
 
