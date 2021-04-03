@@ -9,3 +9,6 @@
 /.nrepl-port
 .hgignore
 .hg/
+.calva/
+.clj-kondo/
+.lsp/
