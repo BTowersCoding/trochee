@@ -12,3 +12,4 @@
 .calva/
 .clj-kondo/
 .lsp/
+resources/view.scad

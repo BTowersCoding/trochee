@@ -232,7 +232,7 @@
                     (+ (/ mount-height -2) -3.5)
                     (+ (/ mount-height 2) 5.0)
                     front-to-back-scale)
-                   -2]))
+                   -1.5]))
 
 (defn wall-sphere-top [front-to-back-scale]
   (wall-sphere-at [0
@@ -247,18 +247,6 @@
 (def wall-sphere-bottom-front (wall-sphere-bottom 0))
 (def wall-sphere-top-front (wall-sphere-top 0))
 
-(defn top-case-cover [place-fn sphere
-                      x-start x-end
-                      y-start y-end
-                      step]
-  (apply union
-         (for [x (range-inclusive x-start (- x-end step) step)
-               y (range-inclusive y-start (- y-end step) step)]
-           (hull (place-fn x y sphere)
-                 (place-fn (+ x step) y sphere)
-                 (place-fn x (+ y step) sphere)
-                 (place-fn (+ x step) (+ y step) sphere)))))
-
 (def front-wall
   (let [step wall-step
         place case-place]
@@ -266,8 +254,8 @@
            (for [x (range-inclusive 0 (- right-wall-column step) step)]
              (hull (place (- x 1/2) 8.3 wall-sphere-top-front)
                    (place (+ x step) 8.3 wall-sphere-top-front)
-                   (place (- x 1/2) 8.3 (wall-sphere-at [0 -25 -24]))
-                   (place (+ x step) 8.3 (wall-sphere-at [0 -25 -24])))))))
+                   (place (- x 1/2) 8.3 (wall-sphere-at [0 -25 -23]))
+                   (place (+ x step) 8.3 (wall-sphere-at [0 -25 -23])))))))
 
 (def back-wall
   (let [step wall-step
@@ -314,21 +302,6 @@
                                       (place (+ x step) 7.6  wall-sphere-bottom-front)
                                       (place x (- back-y 0.9) wall-sphere-bottom-back)
                                       (place (+ x step) (- back-y 0.9) wall-sphere-bottom-back))))))))
-
-(view (union
-       key-holes
-       ;caps
-       front-wall
-       back-wall
-       right-wall
-       left-wall
-       bottom-wall))
-
-(view bottom-wall)
-
-
-
-
 
 ;;;;;;;;;;;;
 ;; Bottom ;;
@@ -517,6 +490,35 @@
   (union
    (key-place (+ 4 1/2) 1/2 screw-hole)
    (key-place (+ 4 1/2) (+ 3 1/2) screw-hole)))
+
+(def posts
+  (let [bumper-diameter 9.6
+        bumper-radius (/ bumper-diameter 2)
+        stand-diameter 5
+        stand-radius (/ stand-diameter 2)
+        stand-at #(difference (->> (sphere stand-radius)
+                                   (translate [0 0 (+ (/ stand-radius -2) -4.5)])
+                                   %
+                                   (bottom-hull))
+                              (->> (cube stand-diameter stand-diameter stand-radius)
+                                   (translate [0 0 (/ stand-radius -2)])
+                                   %)
+                              (->> (sphere bumper-radius)
+                                   (translate [0 0 (+ (/ stand-radius -2) -4.5)])
+                                   %
+                                   (bottom 1.5)))]
+    [(stand-at #(key-place 0.5 0.5 %))
+     (stand-at #(key-place 0.5 6.5 %))
+     (stand-at #(key-place 6.5 0.5 %))
+     (stand-at #(key-place 6.5 6.5 %))]))
+
+(view (union
+       key-holes
+       front-wall
+       back-wall
+       right-wall
+       left-wall
+       (translate [0 0 7] posts)))
 
 (defn circuit-cover [width length height]
   (let [cover-sphere-radius 1
