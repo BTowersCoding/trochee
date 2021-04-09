@@ -1,10 +1,10 @@
 (ns porkostomus.trochee
   (:require [scad-clj.scad :as scad :refer [write-scad]]
-            [scad-clj.model :as model :refer [with-fn translate mirror difference sphere cube cylinder union hull color rotate extrude-linear polygon project]]))
+            [scad-clj.model :as model :refer [with-fn translate mirror difference sphere cube cylinder polyhedron union hull color rotate extrude-linear polygon project]]))
 
 (defn view [block]
   (spit "resources/view.scad"
-        (scad/write-scad
+        (write-scad
          block)))
 
 ;;;;;;;;;;;;;;;;;
@@ -43,50 +43,6 @@
            (->> plate-half
                 (mirror [1 0 0])
                 (mirror [0 1 0])))))
-
-
-;;;;;;;;;;;;;;;;
-;; SA Keycaps ;;
-;;;;;;;;;;;;;;;;
-
-(def sa-length 18.25)
-(def sa-double-length 37.5)
-(def sa-cap {1 (let [bl2 (/ 18.5 2)
-                     m (/ 17 2)
-                     key-cap (hull (->> (polygon [[bl2 bl2] [bl2 (- bl2)] [(- bl2) (- bl2)] [(- bl2) bl2]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 0.05]))
-                                   (->> (polygon [[m m] [m (- m)] [(- m) (- m)] [(- m) m]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 6]))
-                                   (->> (polygon [[6 6] [6 -6] [-6 -6] [-6 6]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 12])))]
-                 (->> key-cap
-                      (translate [0 0 (+ 5 plate-thickness)])
-                      (color [220/255 163/255 163/255 1])))
-             2 (let [bl2 (/ sa-double-length 2)
-                     bw2 (/ 18.25 2)
-                     key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 0.05]))
-                                   (->> (polygon [[6 16] [6 -16] [-6 -16] [-6 16]])
-                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                        (translate [0 0 12])))]
-                 (->> key-cap
-                      (translate [0 0 (+ 5 plate-thickness)])
-                      (color [127/255 159/255 127/255 1])))
-             1.5 (let [bl2 (/ 18.25 2)
-                       bw2 (/ 28 2)
-                       key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
-                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 0.05]))
-                                     (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
-                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
-                                          (translate [0 0 12])))]
-                   (->> key-cap
-                        (translate [0 0 (+ 5 plate-thickness)])
-                        (color [240/255 223/255 175/255 1])))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
@@ -254,7 +210,7 @@
            (for [x (range-inclusive 0 (- right-wall-column step) step)]
              (hull (place (- x 1/2) 8.3 wall-sphere-top-front)
                    (place (+ x step) 8.3 wall-sphere-top-front)
-                   (place (- x 1/2) 8.77 (wall-sphere-at [0 -25 -20. f5]))
+                   (place (- x 1/2) 8.77 (wall-sphere-at [0 -25 -20.5]))
                    (place (+ x step) 8.77 (wall-sphere-at [0 -25 -20.5])))))))
 
 (def back-wall
@@ -320,217 +276,3 @@
                                       (place (+ x step) 7.6  wall-sphere-bottom-front)
                                       (place x (- back-y 0.9) wall-sphere-bottom-back)
                                       (place (+ x step) (- back-y 0.9) wall-sphere-bottom-back))))))))
-
-(def screw-hole (->> (cylinder 1.5 60)
-                     (translate [0 0 3/2])
-                     (with-fn wall-sphere-n)))
-
-(def screw-holes
-  (union
-   (key-place (+ 4 1/2) 1/2 screw-hole)
-   (key-place (+ 4 1/2) (+ 3 1/2) screw-hole)))
-
-(def posts
-  (let [bumper-diameter 9.6
-        bumper-radius (/ bumper-diameter 2)
-        stand-diameter 5
-        stand-radius (/ stand-diameter 2)
-        stand-at #(difference (->> (sphere stand-radius)
-                                   (translate [0 0 (+ (/ stand-radius -2) -4.5)])
-                                   %
-                                   (bottom-hull))
-                              (->> (cube stand-diameter stand-diameter stand-radius)
-                                   (translate [0 0 (/ stand-radius -2)])
-                                   %)
-                              (->> (sphere bumper-radius)
-                                   (translate [0 0 (+ (/ stand-radius -2) -4.5)])
-                                   %
-                                   (bottom 1.5)))]
-    [(stand-at #(key-place 0.5 0.5 %))
-     (stand-at #(key-place 0.5 6.5 %))
-     (stand-at #(key-place 6.5 0.5 %))
-     (stand-at #(key-place 6.5 6.5 %))]))
-
-(view (union
-       key-holes
-       front-wall
-       back-wall
-       right-wall
-       left-wall
-       ))
-
-(defn circuit-cover [width length height]
-  (let [cover-sphere-radius 1
-        cover-sphere (->> (sphere cover-sphere-radius)
-                          (with-fn 20))
-        cover-sphere-z (+ (- height) (- cover-sphere-radius))
-        cover-sphere-x (+ (/ width 2) cover-sphere-radius)
-        cover-sphere-y (+ (/ length 2) (+ cover-sphere-radius))
-        cover-sphere-tl (->> cover-sphere
-                             (translate [(- cover-sphere-x) (- cover-sphere-y) cover-sphere-z])
-                             (key-place 1/2 3/2))
-        cover-sphere-tr (->> cover-sphere
-                             (translate [cover-sphere-x (- cover-sphere-y) cover-sphere-z])
-                             (key-place 1/2 3/2))
-        cover-sphere-br (->> cover-sphere
-                             (translate [cover-sphere-x cover-sphere-y cover-sphere-z])
-                             (key-place 1/2 3/2))
-        cover-sphere-bl (->> cover-sphere
-                             (translate [(- cover-sphere-x) cover-sphere-y cover-sphere-z])
-                             (key-place 1/2 3/2))
-
-        lower-to-bottom #(translate [0 0 (+ (- cover-sphere-radius) -5.5)] %)
-        bl (->> cover-sphere lower-to-bottom (key-place 0 1/2))
-        br (->> cover-sphere lower-to-bottom (key-place 1 1/2))
-        tl (->> cover-sphere lower-to-bottom (key-place 0 5/2))
-        tr (->> cover-sphere lower-to-bottom (key-place 1 5/2))
-
-        mlb (->> cover-sphere
-                 (translate [(- cover-sphere-x) 0 (+ (- height) -1)])
-                 (key-place 1/2 3/2))
-        mrb (->> cover-sphere
-                 (translate [cover-sphere-x 0 (+ (- height) -1)])
-                 (key-place 1/2 3/2))
-
-        mlt (->> cover-sphere
-                 (translate [(+ (- cover-sphere-x) -4) 0 -6])
-                 (key-place 1/2 3/2))
-        mrt (->> cover-sphere
-                 (translate [(+ cover-sphere-x 4) 0 -6])
-                 (key-place 1/2 3/2))]
-    (union
-     (hull cover-sphere-bl cover-sphere-br cover-sphere-tl cover-sphere-tr)
-     (hull cover-sphere-br cover-sphere-bl bl br)
-     (hull cover-sphere-tr cover-sphere-tl tl tr)
-     (hull cover-sphere-tl tl mlb mlt)
-     (hull cover-sphere-bl bl mlb mlt)
-     (hull cover-sphere-tr tr mrb mrt)
-     (hull cover-sphere-br br mrb mrt))))
-
-(def io-exp-width 10)
-(def io-exp-height 8)
-(def io-exp-length 36)
-
-(def teensy-width 20)
-(def teensy-height 12)
-(def teensy-length 33)
-
-(def io-exp-cover (circuit-cover io-exp-width io-exp-length io-exp-height))
-(def teensy-cover (circuit-cover teensy-width teensy-length teensy-height))
-
-(def trrs-diameter 6.6)
-(def trrs-radius (/ trrs-diameter 2))
-(def trrs-hole-depth 10)
-
-(def trrs-hole (->> (union (cylinder trrs-radius trrs-hole-depth)
-                           (->> (cube trrs-diameter (+ trrs-radius 5) trrs-hole-depth)
-                                (translate [0 (/ (+ trrs-radius 5) 2) 0])))
-                    (rotate (/ π 2) [1 0 0])
-                    (translate [0 (+ (/ mount-height 2) 4) (- trrs-radius)])
-                    (with-fn 50)))
-
-(def trrs-hole-just-circle
-  (->> (cylinder trrs-radius trrs-hole-depth)
-       (rotate (/ π 2) [1 0 0])
-       (translate [0 (+ (/ mount-height 2) 4) (- trrs-radius)])
-       (with-fn 50)
-       (key-place 1/2 0)))
-
-(def trrs-box-hole (->> (cube 14 14 7)
-                        (translate [0 1 -3.5])))
-
-
-(def trrs-cutout
-  (->> (union trrs-hole
-              trrs-box-hole)
-       (key-place 1/2 0)))
-
-(def teensy-pcb-thickness 1.6)
-(def teensy-offset-height 5)
-
-(def teensy-pcb (->> (cube 18 30.5 teensy-pcb-thickness)
-                     (translate [0 0 (+ (/ teensy-pcb-thickness -2) (- teensy-offset-height))])
-                     (key-place 1/2 3/2)
-                     (color [1 0 0])))
-
-(def teensy-support
-  (difference
-   (union
-    (->> (cube 3 3 9)
-         (translate [0 0 -2])
-         (key-place 1/2 3/2)
-         (color [0 1 0]))
-    (hull (->> (cube 3 6 9)
-               (translate [0 0 -2])
-               (key-place 1/2 2)
-               (color [0 0 1]))
-          (->> (cube 3 3 (+ teensy-pcb-thickness 3))
-               (translate [0 (/ 30.5 -2) (+ (- teensy-offset-height)
-                                            #_(/ (+ teensy-pcb-thickness 3) -2))])
-               (key-place 1/2 3/2)
-               (color [0 0 1]))))
-   teensy-pcb
-   (->> (cube 18 30.5 teensy-pcb-thickness)
-        (translate [0 1.5 (+ (/ teensy-pcb-thickness -2) (- teensy-offset-height) -1)])
-        (key-place 1/2 3/2)
-        (color [1 0 0]))))
-
-(def usb-cutout
-  (let [hole-height 6.2
-        side-radius (/ hole-height 2)
-        hole-width 10.75
-        side-cylinder (->> (cylinder side-radius teensy-length)
-                           (with-fn 20)
-                           (translate [(/ (- hole-width hole-height) 2) 0 0]))]
-    (->> (hull side-cylinder
-               (mirror [-1 0 0] side-cylinder))
-         (rotate (/ π 2) [1 0 0])
-         (translate [0 (/ teensy-length 2) (- side-radius)])
-         (translate [0 0 (- 1)])
-         (translate [0 0 (- teensy-offset-height)])
-         (key-place 1/2 3/2))))
-
-;;;;;;;;;;;;;;;;;;
-;; Final Export ;;
-;;;;;;;;;;;;;;;;;;
-
-(def dactyl-bottom-right
-  (difference
-   (union
-    teensy-cover
-    (difference
-     bottom-plate
-     (hull teensy-cover)
-     teensy-cover
-     trrs-cutout
-     (->> (cube 1000 1000 10) (translate [0 0 -5]))
-     screw-holes))
-   usb-cutout))
-
-(def dactyl-bottom-left
-  (mirror [-1 0 0]
-          (union
-           io-exp-cover
-           (difference
-            bottom-plate
-            (hull io-exp-cover)
-            io-exp-cover
-            trrs-cutout
-            (->> (cube 1000 1000 10) (translate [0 0 -5]))
-            screw-holes))))
-
-(def dactyl-top-right
-  (difference
-   (union key-holes
-          connectors
-          teensy-support)
-   trrs-hole-just-circle
-   screw-holes))
-
-(def dactyl-top-left
-  (mirror [-1 0 0]
-          (difference
-           (union key-holes
-                  connectors)
-           trrs-hole-just-circle
-           screw-holes)))
