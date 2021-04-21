@@ -4,7 +4,7 @@
 
 (defn view [block]
   (spit "resources/view.scad"
-        (write-scad
+        (scad/write-scad
          block)))
 
 ;;;;;;;;;;;;;;;;;
@@ -44,11 +44,55 @@
                 (mirror [1 0 0])
                 (mirror [0 1 0])))))
 
+
+;;;;;;;;;;;;;;;;
+;; SA Keycaps ;;
+;;;;;;;;;;;;;;;;
+
+(def sa-length 18.25)
+(def sa-double-length 37.5)
+(def sa-cap {1 (let [bl2 (/ 18.5 2)
+                     m (/ 17 2)
+                     key-cap (hull (->> (polygon [[bl2 bl2] [bl2 (- bl2)] [(- bl2) (- bl2)] [(- bl2) bl2]])
+                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                        (translate [0 0 0.05]))
+                                   (->> (polygon [[m m] [m (- m)] [(- m) (- m)] [(- m) m]])
+                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                        (translate [0 0 6]))
+                                   (->> (polygon [[6 6] [6 -6] [-6 -6] [-6 6]])
+                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                        (translate [0 0 12])))]
+                 (->> key-cap
+                      (translate [0 0 (+ 5 plate-thickness)])
+                      (color [220/255 163/255 163/255 1])))
+             2 (let [bl2 (/ sa-double-length 2)
+                     bw2 (/ 18.25 2)
+                     key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
+                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                        (translate [0 0 0.05]))
+                                   (->> (polygon [[6 16] [6 -16] [-6 -16] [-6 16]])
+                                        (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                        (translate [0 0 12])))]
+                 (->> key-cap
+                      (translate [0 0 (+ 5 plate-thickness)])
+                      (color [127/255 159/255 127/255 1])))
+             1.5 (let [bl2 (/ 18.25 2)
+                       bw2 (/ 28 2)
+                       key-cap (hull (->> (polygon [[bw2 bl2] [bw2 (- bl2)] [(- bw2) (- bl2)] [(- bw2) bl2]])
+                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                          (translate [0 0 0.05]))
+                                     (->> (polygon [[11 6] [-11 6] [-11 -6] [11 -6]])
+                                          (extrude-linear {:height 0.1 :twist 0 :convexity 0})
+                                          (translate [0 0 12])))]
+                   (->> key-cap
+                        (translate [0 0 (+ 5 plate-thickness)])
+                        (color [240/255 223/255 175/255 1])))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def columns (range 0 11))
+(def columns (range 0 8))
 (def rows (range 0 8))
 (def π Math/PI)
 (def α (/ π 12))
@@ -175,7 +219,7 @@
 (def wall-sphere-n 20) ;;Sphere resolution, lower for faster renders
 
 (defn wall-sphere-at [coords]
-  (->> (sphere 2)
+  (->> (sphere 2.5)
        (translate coords)
        (with-fn wall-sphere-n)))
 
@@ -196,7 +240,7 @@
                     (+ (/ mount-height -2) -3.5)
                     (+ (/ mount-height 2) 3.5)
                     front-to-back-scale)
-                   10]))
+                   9.5]))
 
 (def wall-sphere-top-back (wall-sphere-top 1))
 (def wall-sphere-bottom-back (wall-sphere-bottom 1))
@@ -222,8 +266,18 @@
                               (for [x (range-inclusive left-wall-column (- right-wall-column step) step)]
                                 (hull (place x (dec back-y) wall-sphere-top-back)
                                       (place (+ x step) (dec back-y) wall-sphere-top-back)
-                                      (place x (- back-y 0.95) wall-sphere-bottom-back)
-                                      (place (+ x step) (- back-y 0.95) wall-sphere-bottom-back))))))))
+                                      (place x (- back-y 0.95) (wall-sphere-at 
+                                                                [0 (scale-to-range (+ (/ mount-height -2) -3.5)
+                                                                     (+ (/ mount-height 2) 5.0)
+                                                                                 1)
+                                                                                0]))
+                                      (place (+ x step) (- back-y 0.95) (wall-sphere-at
+                                                                         [0
+                                                                          (scale-to-range
+                                                                           (+ (/ mount-height -2) -3.5)
+                                                                           (+ (/ mount-height 2) 5.0)
+                                                                           1)
+                                                                          0])))))))))
 
 (def left-wall
   (let [place case-place]
@@ -235,25 +289,6 @@
                               (let [x (scale-to-range 8.3 -3.8 scale)]
                                 (hull (place left-wall-column x (wall-sphere-top scale))
                                       (place left-wall-column (* 0.882 x) (wall-sphere-at [0 2 (- -3 (* 2.1 x))])))))))))))
-
-(for [scale (range-inclusive 0 0.75 0.2)]
- (let [x (scale-to-range 8.7 -3.9 scale)]
-  x))
-
-(comment
-  (view (union
-         (difference
-          left-wall
-          (translate [-10 60 10]
-                     (cube 10 150 10)))
-         (rotate 0 [0 1 0]
-                 (translate [0 0 3]
-                            (difference  (rotate 45 [0 1 0]
-                                                 (translate [-14 60 0] (cube 5 150 5)))
-                                         (union
-                                          (translate [-8 60 17] (cube 10 150 5))
-                                          (translate [-8 60 10] (cube 10 150 5)))))))))
-
 (def right-wall
   (let [place case-place]
     (union
@@ -265,14 +300,66 @@
                                 (hull (place right-wall-column x (wall-sphere-top scale))
                                       (place right-wall-column (* 0.882 x) (wall-sphere-at [0 2 (- -3 (* 2.1 x))])))))))))))
 
-(def bottom-wall
-  (let [step wall-step
-        place case-place]
-    (rotate -0.15 [1 0 0]
-            (translate [0 0 -3]
-                       (apply union
-                              (for [x (range-inclusive left-wall-column (- right-wall-column step) step)]
-                                (hull (place x 7.6 wall-sphere-bottom-front)
-                                      (place (+ x step) 7.6  wall-sphere-bottom-front)
-                                      (place x (- back-y 0.9) wall-sphere-bottom-back)
-                                      (place (+ x step) (- back-y 0.9) wall-sphere-bottom-back))))))))
+(defn bottom-at [x y z]
+  (let [bevel (union
+               (translate [(- x 77) (- y 25) (- z 5)]
+                          (rotate -45 [0 1 0] (cube 10 100 20)))
+               (translate [(+ x 77) (- y 25) (- z 5)]
+                          (rotate 45 [0 1 0] (cube 10 100 20)))
+               (translate [x (- y 72) (- z 7)]
+                          (rotate 45 [1 0 0] (cube 157 10 20))))]
+    (difference
+     (translate [x y z]
+                (cube 153 147 5))
+     bevel)))
+
+(def pico
+ (union 
+  (cube 8 8 3)
+   (translate [0 -24 -1.5]
+  (cube 21 53 1))))
+
+(def pico-cavity
+  (union
+   (translate [0 -24 -1.5]
+              (cube 21 53 3))))
+
+(def pico-posts
+  (union
+   (difference (bottom-at 65 65 12.2)
+               (translate [66 137.5 15] pico-cavity))
+   (translate [61 134 13] (cylinder 3 3))
+   (translate [61 134 16] (cylinder 2 3))
+   (translate [71 134 13] (cylinder 3 3))
+   (translate [71 134 16] (cylinder 2 3))
+   (translate [61 91 13] (cylinder 3 3))
+   (translate [61 91 16] (cylinder 2 3))
+   (translate [71 91 13] (cylinder 3 3))
+   (translate [71 91 16] (cylinder 2 3))))
+
+(def trochee-top
+  (difference
+   (difference (union
+                key-holes
+                left-wall
+                right-wall
+                front-wall
+                back-wall)
+               (translate [93 63 5] (cube 220 170 10)))
+   (translate [66 137.5 17] pico)
+   (bottom-at 65 65 12.2)))
+
+(def trochee-bottom
+  (union
+   (difference (bottom-at 65 65 12.2)
+               (translate [66 137.5 15] pico-cavity))
+   pico-posts))
+
+(comment
+
+  (view
+   trochee-top)
+
+  (view trochee-bottom)
+
+  )
