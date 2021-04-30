@@ -1,6 +1,6 @@
 (ns porkostomus.trochee
   (:require [scad-clj.scad :as scad :refer [write-scad]]
-            [scad-clj.model :as model :refer [with-fn translate mirror difference sphere cube cylinder polyhedron union hull color rotate extrude-linear polygon project]]))
+            [scad-clj.model :as model :refer [with-fn translate mirror difference sphere cube cylinder polyhedron union intersection hull color rotate scale extrude-linear polygon project]]))
 
 (defn view [block]
   (spit "resources/view.scad"
@@ -90,7 +90,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def columns (range 0 8))
 (def rows (range 0 8))
@@ -302,40 +302,56 @@
 
 (defn bottom-at [x y z]
   (let [bevel (union
-               (translate [(- x 77) (- y 25) (- z 5)]
+               (translate [(- x 82) (+ y 27) (- z 2)]
                           (rotate -45 [0 1 0] (cube 10 100 20)))
-               (translate [(+ x 77) (- y 25) (- z 5)]
-                          (rotate 45 [0 1 0] (cube 10 100 20)))
-               (translate [x (- y 72) (- z 7)]
-                          (rotate 45 [1 0 0] (cube 157 10 20))))]
+               (translate [(+ x 82) (+ y 27) (- z 2)]
+                          (rotate 45 [0 1 0] (cube 10 100 20))))]
     (difference
      (translate [x y z]
-                (cube 153 147 5))
+                (cube 151 153 4))
      bevel)))
 
 (def pico
  (union 
-  (cube 8 8 3)
+  (cube 9 9 4)
    (translate [0 -24 -1.5]
-  (cube 21 53 1))))
+  (cube 21 53 2))))
 
 (def pico-cavity
   (union
    (translate [0 -24 -1.5]
-              (cube 21 53 3))))
+              (cube 22 53 3))))
 
-(def pico-posts
-  (union
-   (difference (bottom-at 65 65 12.2)
-               (translate [66 137.5 15] pico-cavity))
-   (translate [61 134 13] (cylinder 3 3))
-   (translate [61 134 16] (cylinder 2 3))
-   (translate [71 134 13] (cylinder 3 3))
-   (translate [71 134 16] (cylinder 2 3))
-   (translate [61 91 13] (cylinder 3 3))
-   (translate [61 91 16] (cylinder 2 3))
-   (translate [71 91 13] (cylinder 3 3))
-   (translate [71 91 16] (cylinder 2 3))))
+(def wrist-rest
+  (let [clips (union (translate [-11 0 16.5] (cube 2 20 13))
+                     (translate [141.5 0 16.5] (cube 2 20 13))
+                     (translate [-10 5 16.5] (rotate 1.56 [0 1 0] (cylinder 4 3)))
+                     (translate [140.5 5 16.5] (rotate 1.56 [0 1 0] (cylinder 4 3))))]
+    (union
+     (difference
+
+      (scale [1 0.5 0.15]
+             (translate [65 -50 100]
+                        (sphere 100)))
+
+      (translate [65 -10 -5]
+                 (cube 170 130 30))
+      (translate [65 14 20]
+                 (cube 170 40 30))
+      (translate [-37 -22 10]
+                 (cube 50 70 40))
+      (translate [167.5 -22 10]
+                 (cube 50 70 40)))
+     clips)))
+
+(def trochee-bottom
+  (union 
+   (difference (bottom-at 65.2 64 12.0)
+               (translate [66 137.5 15] pico-cavity)
+               (translate [0 -7 0] wrist-rest))
+   (difference
+   (translate [66 89 15] (cube 24 5 7))
+    (translate [66 98 10] (rotate 45 [1 0 0] (cube 22 22 22))))))
 
 (def trochee-top
   (difference
@@ -347,19 +363,9 @@
                 back-wall)
                (translate [93 63 5] (cube 220 170 10)))
    (translate [66 137.5 17] pico)
-   (bottom-at 65 65 12.2)))
-
-(def trochee-bottom
-  (union
-   (difference (bottom-at 65 65 12.2)
-               (translate [66 137.5 15] pico-cavity))
-   pico-posts))
+   trochee-bottom
+   (translate [0 -7 0] wrist-rest)))
 
 (comment
-
-  (view
-   trochee-top)
-
-  (view trochee-bottom)
-
+  (view trochee-top)
   )
